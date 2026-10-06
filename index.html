@@ -299,8 +299,34 @@ document.getElementById("create-book").onclick = () => {
   save(); current = todayIndex(); step = 0; toast("這本已開好"); show("play");
 };
 document.querySelectorAll(".dock button").forEach(b => b.onclick = () => { if (b.dataset.view==="play") { current = state.profile ? todayIndex() : 1; step=0; } show(b.dataset.view); });
+function applyOwner() {
+  if (!window.OWNER_SEED) return false;
+  const hasOwn = state.days && state.days[1] && state.days[1].seen;
+  if (state.profile && hasOwn) return false;
+  state.profile = window.OWNER_SEED.profile;
+  state.days = { ...(state.days || {}), ...window.OWNER_SEED.days };
+  save();
+  return true;
+}
+function boot() {
+  if (state.profile) { renderCover(); return; }
+  const s = document.createElement("script");
+  s.src = "owner-seed.js";
+  s.onload = () => {
+    if (applyOwner()) {
+      current = todayIndex();
+      step = 0;
+      toast("前兩天已在，從第 " + String(current).padStart(2, "0") + " 天繼續");
+      show("play");
+      return;
+    }
+    renderCover();
+  };
+  s.onerror = () => renderCover();
+  document.body.appendChild(s);
+}
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
-renderCover();
+boot();
 </script>
 </body>
 </html>
