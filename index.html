@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="每日一問" />
+<meta name="theme-color" content="#e7eeea" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon.svg" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<title>每日一問</title>
+<style>
+  :root { --paper:#e7eeea; --sheet:rgba(255,255,255,.5); --ink:#1c4548; --soft:#4d6d6e; --line:rgba(138,173,174,.7); --gold:#8a7044; --shadow:0 16px 36px rgba(28,69,72,.08); --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px); }
+  * { box-sizing:border-box; }
+  html,body { margin:0; min-height:100%; }
+  body { font-family:"PingFang TC","Noto Sans TC","Heiti TC",sans-serif; color:var(--ink); background:radial-gradient(circle at 92% 8%,rgba(183,212,230,.7),transparent 28%),radial-gradient(circle at 0% 62%,rgba(201,182,227,.5),transparent 24%),radial-gradient(circle at 12% 100%,rgba(240,221,180,.75),transparent 22%),var(--paper); }
+  button,textarea,input { font-family:inherit; color:inherit; }
+  button { cursor:pointer; }
+  .app { max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:calc(88px + var(--safe-b)); }
+  .view { display:none; padding:calc(18px + var(--safe-t)) 18px 8px; animation:rise .4s ease; }
+  .view.on { display:block; }
+  @keyframes rise { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:none;} }
+  .cover { text-align:center; min-height:86vh; }
+  .mark { width:128px; margin:16px auto 0; }
+  .title { font-size:34px; letter-spacing:.2em; font-weight:560; margin:8px 0 2px; }
+  .sub { letter-spacing:.42em; font-size:13px; color:var(--soft); }
+  .rule { width:148px; height:1px; background:var(--ink); margin:16px auto 12px; opacity:.65; }
+  .ask { letter-spacing:.08em; }
+  .primary,.ghost,.tiny { border:0; border-radius:999px; padding:13px 22px; background:var(--ink); color:#f4f7f5; letter-spacing:.12em; }
+  .ghost { background:transparent; color:var(--ink); border:1px solid rgba(28,69,72,.3); }
+  .tiny { padding:8px 12px; font-size:12px; letter-spacing:.04em; background:var(--sheet); color:var(--ink); border:1px solid rgba(28,69,72,.12); }
+  .cover .primary { margin-top:22px; }
+  .hint { margin-top:12px; font-size:13px; color:var(--soft); line-height:1.7; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  h1 { font-size:22px; margin:0; font-weight:560; letter-spacing:.1em; }
+  .meta { font-size:12px; color:var(--soft); letter-spacing:.06em; margin-top:2px; }
+  .sheet,.card { background:var(--sheet); border-radius:22px; padding:16px; box-shadow:var(--shadow); }
+  .card { border-radius:18px; margin:10px 0; }
+  .card h3 { margin:0 0 8px; font-size:15px; letter-spacing:.08em; }
+  .card p,.woven { font-size:14.5px; line-height:1.75; white-space:pre-wrap; }
+  .q { color:var(--soft); font-size:13px; }
+  label { display:block; font-size:13px; margin:12px 0 6px; }
+  input[type="text"],input[type="date"] { width:100%; border:0; border-bottom:1px solid var(--line); background:transparent; font-size:16px; padding:8px 2px; outline:none; }
+  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px; }
+  .step { border:0; background:rgba(255,255,255,.4); border-radius:12px; padding:8px 4px; font-size:12px; color:var(--soft); }
+  .step.on { background:var(--ink); color:#f4f7f5; }
+  .step.done { background:rgba(138,112,68,.16); color:var(--ink); }
+  .spark { font-size:18px; line-height:1.55; margin:4px 0 8px; }
+  .swap { border:0; background:transparent; color:var(--gold); padding:0; font-size:12px; letter-spacing:.08em; }
+  textarea.lines { width:100%; min-height:180px; border:0; resize:vertical; outline:none; background:transparent; font-size:16px; line-height:32px; background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,var(--line) 32px); background-attachment:local; }
+  .meter { height:7px; border-radius:99px; background:rgba(28,69,72,.08); overflow:hidden; margin-top:8px; }
+  .meter i { display:block; height:100%; width:0; background:linear-gradient(90deg,#d7eef4,var(--gold)); }
+  .count,.actions { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--soft); margin-top:8px; }
+  .actions { margin-top:14px; }
+  .drops { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  .drop-btn { border:0; background:transparent; padding:4px 0 8px; border-radius:16px; }
+  .drop-btn svg { width:42px; height:54px; display:block; margin:0 auto; }
+  .drop-btn span { display:block; font-size:11px; letter-spacing:.06em; color:var(--soft); }
+  .drop-btn.today span { color:var(--ink); font-weight:650; }
+  .dock { position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(480px,100%); display:flex; justify-content:space-around; padding:8px 8px calc(10px + var(--safe-b)); background:rgba(231,238,234,.94); backdrop-filter:blur(12px); border-top:1px solid rgba(28,69,72,.08); z-index:5; }
+  .dock button { border:0; background:transparent; color:var(--soft); letter-spacing:.12em; font-size:13px; padding:10px; }
+  .dock button.on { color:var(--ink); font-weight:650; }
+  .toast { position:fixed; left:50%; bottom:96px; transform:translateX(-50%); background:var(--ink); color:#f4f7f5; border-radius:999px; padding:8px 14px; font-size:12px; opacity:0; transition:.3s; z-index:8; }
+  .toast.on { opacity:1; }
+  .modal { position:fixed; inset:0; background:rgba(28,69,72,.28); display:none; place-items:center; z-index:20; padding:20px; }
+  .modal.on { display:grid; }
+  .dialog { background:#f4f7f5; border-radius:18px; padding:18px; width:min(400px,100%); }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="view on" id="view-cover">
+    <div class="cover">
+      <div class="mark" id="cover-mark"></div>
+      <div class="title">每日一問</div>
+      <div class="sub">第一個月</div>
+      <div class="rule"></div>
+      <div class="ask">今天我看到了什麼？</div>
+      <button class="primary" id="open-main">開始今日</button>
+      <div class="hint" id="cover-hint">每位使用者各自一本。看見、賺錢、人性、判斷。紀錄只留在這台裝置。</div>
+    </div>
+  </section>
+  <section class="view" id="view-start">
+    <div class="top"><div><h1>開一本</h1><div class="meta">三十天，從今天或你選的日子起</div></div></div>
+    <div class="sheet">
+      <label>怎麼稱呼這本</label>
+      <input id="book-name" type="text" maxlength="24" placeholder="例如：我的第一個月" />
+      <label>開始日期</label>
+      <input id="book-start" type="date" />
+      <p class="q">不會建立帳號，也不會把文字送出這台裝置。換手機請先匯出備份。</p>
+      <div class="actions"><button class="primary" id="create-book">開本</button></div>
+    </div>
+  </section>
+  <section class="view" id="view-play">
+    <div class="top"><div><h1 id="play-title">第 01 天</h1><div class="meta" id="play-meta"></div></div><button class="tiny" id="to-month">水滴</button></div>
+    <div class="sheet">
+      <div class="steps" id="steps"></div>
+      <div class="spark" id="spark"></div>
+      <button class="swap" id="swap">換一個問法</button>
+      <textarea class="lines" id="writer" placeholder="想到什麼寫下來。真的思考過的。"></textarea>
+      <div class="count"><span id="count">0 / 200 字</span><span id="lens-left"></span></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="actions"><button class="ghost" id="prev-step">上一眼</button><button class="primary" id="next-step">下一眼</button></div>
+    </div>
+  </section>
+  <section class="view" id="view-month">
+    <div class="top"><div><h1 id="month-title">三十滴</h1><div class="meta" id="month-meta"></div></div></div>
+    <div class="drops" id="month-board"></div>
+  </section>
+  <section class="view" id="view-weave">
+    <div class="top"><div><h1>梳理</h1><div class="meta" id="weave-meta"></div></div><button class="tiny" id="weave-back">回四眼</button></div>
+    <div id="weave-body"></div>
+    <div class="actions"><button class="primary" id="mark-woven">收成並點亮</button><button class="ghost" id="export-day">匯出這一天</button></div>
+  </section>
+  <section class="view" id="view-star">
+    <div class="top"><div><h1>星圖</h1><div class="meta" id="star-meta"></div></div></div>
+    <div id="star-map"></div>
+    <div class="card"><h3>帶走的句子</h3><div id="seals"></div></div>
+    <div class="card"><h3>這本怎麼用</h3><p class="q">加入主畫面後就能像 app 打開。iPhone：分享，加入主畫面。紀錄不上傳。換裝置前先匯出。</p>
+      <div class="actions"><button class="ghost" id="export-all">匯出備份</button><button class="ghost" id="import-btn">匯入備份</button><button class="tiny" id="new-month">開新的一個月</button></div>
+    </div>
+  </section>
+</div>
+<nav class="dock" id="dock">
+  <button data-view="cover">封面</button>
+  <button data-view="play">今日</button>
+  <button data-view="month">水滴</button>
+  <button data-view="star">星圖</button>
+</nav>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="dialog"><h3 id="modal-title">確認</h3><p id="modal-body"></p><div class="actions"><button class="primary" id="modal-ok">確定</button><button class="ghost" id="modal-cancel">先不要</button></div></div></div>
+<input id="import-file" type="file" accept="application/json" hidden />
+<script>
+const WEEK = "日一二三四五六";
+const KEY = "daily-question-public-v1";
+const LENSES = [
+  { id:"seen", name:"看見", sparks:["今天哪一個畫面停住了你？","若只留一個物件，會是什麼？","誰在做事，誰在旁邊看？"] },
+  { id:"money", name:"賺錢", sparks:["誰付了錢，買到的是哪個狀態？","先花的錢，有沒有變成還會再來的交付？","這是一筆收入，還是會重複的現金流？"] },
+  { id:"human", name:"人性", sparks:["人真正要的，是東西，還是一個可以帶走的狀態？","賣點是不是他自己已經想要的？","誰能當見證：用過的人，還是只有說法？"] },
+  { id:"view", name:"判斷", sparks:["這是一技之長，還是可以聯盟的系統？","單位先清楚了嗎？不清楚就先別談一群人。","若要一起做，角色、分帳、退出寫清了嗎？"] }
+];
+let state = load();
+let current = 1;
+let step = 0;
+let sparkAt = 0;
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || fresh(); }
+  catch (e) { return fresh(); }
+}
+function fresh() { return { profile:null, days:{}, archives:[] }; }
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function entry(n) {
+  if (!state.days[n]) state.days[n] = { seen:"", money:"", human:"", view:"", seal:"", woven:"", written:false, wovenDone:false };
+  return state.days[n];
+}
+function startDate() { return state.profile ? new Date(state.profile.start + "T00:00:00") : new Date(); }
+function dayDate(n) { const d = new Date(startDate()); d.setDate(d.getDate()+n-1); return d; }
+function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function zh(d) { return `${d.getMonth()+1}月${d.getDate()}日 星期${WEEK[d.getDay()]}`; }
+function todayIndex() {
+  const now = new Date(); const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((t - startDate()) / 86400000) + 1;
+  return Math.min(30, Math.max(1, diff));
+}
+function chars(n) { const e = entry(n); return LENSES.reduce((s,l)=>s+(e[l.id]||"").replace(/\s/g,"").length,0); }
+function written(n) { const e = entry(n); return !!(e.written || chars(n)>0); }
+function toast(msg) { const el = document.getElementById("toast"); el.textContent = msg; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>el.classList.remove("on"), 1500); }
+function polar(cx,cy,r,deg){ const a=(deg-90)*Math.PI/180; return [+(cx+r*Math.cos(a)).toFixed(2), +(cy+r*Math.sin(a)).toFixed(2)]; }
+function pts(cx,cy,r,degs){ return degs.map(d=>polar(cx,cy,r,d).join(",")).join(" "); }
+function logoSVG() {
+  const cx=100,cy=86,R=58, up=pts(cx,cy,R,[0,120,240]), down=pts(cx,cy,R,[60,180,300]), hex=pts(cx,cy,R*0.5,[30,90,150,210,270,330]);
+  const spokes=[0,60,120,180,240,300].map(d=>{ const [x,y]=polar(cx,cy,R,d); return `M${cx} ${cy}L${x} ${y}`; }).join("");
+  const tip=polar(cx,cy,R,180);
+  return `<svg viewBox="0 0 200 248" fill="none" aria-hidden="true"><g stroke="#8a7044" stroke-width="1.15" stroke-linejoin="round"><polygon points="${up}"/><polygon points="${down}"/><polygon points="${hex}"/><circle cx="${cx}" cy="${cy}" r="17.5"/><path d="${spokes}"/></g><path d="M${tip[0]} ${tip[1]} C100 154 100 158 100 160" stroke="#8a7044" stroke-width="1.05"/><path d="M100 160 C93.4 166.5 92.2 171.2 92.2 178.2 C92.2 188.4 107.8 188.4 107.8 178.2 C107.8 171.2 106.6 166.5 100 160 Z" fill="#d8eef5" stroke="#8a7044" stroke-width="1.05"/><circle cx="96.6" cy="176.4" r="2.15" fill="#f0c6d1"/><path d="M100 188 C100.6 198 96.2 206 97.4 216 C98.4 224 94.2 230 92.4 238" stroke="#8a7044" stroke-width="1.05" fill="none"/></svg>`;
+}
+function dropSVG(kind) {
+  const fill = kind==="woven" ? "#1c4548" : kind==="written" ? "#e7d3a4" : "#d8eef5";
+  return `<svg viewBox="0 0 42 54"><path d="M21 4 C21 4 8 20 8 32 C8 41 14 48 21 48 C28 48 34 41 34 32 C34 20 21 4 21 4 Z" fill="${fill}" stroke="#8a7044" stroke-width="1.2"/></svg>`;
+}
+document.getElementById("cover-mark").innerHTML = logoSVG();
+function show(name) {
+  if (!state.profile && (name==="play" || name==="month" || name==="weave" || name==="star")) name = "start";
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("on"));
+  document.getElementById("view-"+name).classList.add("on");
+  document.querySelectorAll(".dock button").forEach(b => b.classList.toggle("on", b.dataset.view===name || (name==="weave" && b.dataset.view==="play") || (name==="start" && b.dataset.view==="play")));
+  if (name==="cover") renderCover();
+  if (name==="play") renderPlay();
+  if (name==="month") renderMonth();
+  if (name==="weave") renderWeave();
+  if (name==="star") renderStar();
+  if (name==="start") document.getElementById("book-start").value = fmt(new Date());
+  window.scrollTo(0,0);
+}
+function renderCover() {
+  const done = state.profile ? [...Array(30)].filter((_,i)=>written(i+1)).length : 0;
+  document.getElementById("cover-hint").textContent = state.profile
+    ? `${state.profile.name} · 已點亮 ${done} / 30。今天是第 ${String(todayIndex()).padStart(2,"0")} 天。`
+    : "每位使用者各自一本。看見、賺錢、人性、判斷。紀錄只留在這台裝置。";
+  document.getElementById("open-main").textContent = state.profile ? "開始今日" : "開一本";
+}
+function renderPlay() {
+  const e = entry(current), lens = LENSES[step];
+  document.getElementById("play-title").textContent = `第 ${String(current).padStart(2,"0")} 天`;
+  document.getElementById("play-meta").textContent = zh(dayDate(current)) + (current===todayIndex()?" · 今日":"");
+  document.getElementById("steps").innerHTML = LENSES.map((l,i)=>`<button class="step ${i===step?"on":""} ${e[l.id]?"done":""}" data-i="${i}">${l.name}</button>`).join("");
+  document.querySelectorAll(".step").forEach(b => b.onclick = () => { step=+b.dataset.i; sparkAt=0; renderPlay(); });
+  document.getElementById("spark").textContent = lens.sparks[sparkAt % lens.sparks.length];
+  document.getElementById("writer").value = e[lens.id] || "";
+  document.getElementById("prev-step").style.visibility = step ? "visible" : "hidden";
+  document.getElementById("next-step").textContent = step===3 ? "去收成" : "下一眼";
+  document.getElementById("lens-left").textContent = `${step+1} / 4`;
+  updateCount();
+}
+function updateCount() {
+  const n = chars(current);
+  document.getElementById("count").firstElementChild.textContent = `${n} / 200 字`;
+  document.getElementById("meter").style.width = Math.min(100, n/2) + "%";
+}
+document.getElementById("writer").oninput = (ev) => { entry(current)[LENSES[step].id] = ev.target.value; if (chars(current)>0) entry(current).written = true; save(); updateCount(); };
+document.getElementById("swap").onclick = () => { sparkAt++; renderPlay(); };
+document.getElementById("prev-step").onclick = () => { if (step) { step--; sparkAt=0; renderPlay(); } };
+document.getElementById("next-step").onclick = () => { if (step<3) { step++; sparkAt=0; renderPlay(); return; } show("weave"); };
+document.getElementById("to-month").onclick = () => show("month");
+function renderMonth() {
+  document.getElementById("month-title").textContent = state.profile.name;
+  const done = [...Array(30)].filter((_,i)=>written(i+1)).length;
+  document.getElementById("month-meta").textContent = `已點亮 ${done} / 30 · 今日第 ${String(todayIndex()).padStart(2,"0")} 天`;
+  document.getElementById("month-board").innerHTML = [...Array(30)].map((_,i)=>i+1).map(n => {
+    const e = entry(n); const kind = e.wovenDone ? "woven" : written(n) ? "written" : "empty";
+    return `<button class="drop-btn ${n===todayIndex()?"today":""}" data-n="${n}">${dropSVG(kind)}<span>${String(n).padStart(2,"0")}</span></button>`;
+  }).join("");
+  document.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { current=+b.dataset.n; step=0; show("play"); });
+}
+function questions(e) {
+  return [["一、看見", e.seen||"這眼還沒寫。先留一個停住你的畫面。"],["二、賺錢", e.money||"這眼還沒寫。誰付錢，買到的狀態會不會自己再來。"],["三、人性", e.human||"這眼還沒寫。人要的是東西，還是一個可以帶走的狀態。"],["四、判斷", e.view||"這眼還沒寫。先看單位，再談一群人。聯盟要可逆。"],["五、今日一句", e.seal||"用你自己的一句收束。"]];
+}
+function buildWoven(n) {
+  const e = entry(n);
+  return `今天我看到了什麼\n\n${state.profile.name} · 第 ${String(n).padStart(2,"0")} 天 · ${zh(dayDate(n))}\n\n` + questions(e).map(([h,p])=>`${h}\n\n${p}`).join("\n\n") + "\n\n結構不改你的判斷。三隻眼睛保持打開：錢怎麼流、人為什麼付、自己站在哪一層。";
+}
+function renderWeave() {
+  const e = entry(current);
+  document.getElementById("weave-meta").textContent = `第 ${String(current).padStart(2,"0")} 天 · ${zh(dayDate(current))}`;
+  const body = document.getElementById("weave-body");
+  if (e.woven && e.woven.trim()) {
+    body.innerHTML = `<div class="card"><h3>已梳理</h3><textarea class="lines" id="woven-edit" style="min-height:240px"></textarea><p class="q">可改。四眼原文還在。</p></div>`;
+    const box = document.getElementById("woven-edit"); box.value = e.woven; box.oninput = () => { e.woven = box.value; save(); };
+    return;
+  }
+  body.innerHTML = questions(e).map(([h,p])=>`<div class="card"><h3>${h}</h3><p>${p.replace(/[&<>]/g,c=>({"&":"&","<":"<",">":">"}[c]))}</p></div>`).join("") + `<div class="card"><h3>補一句帶走的</h3><textarea class="lines" id="seal-edit" style="min-height:72px"></textarea></div>`;
+  const seal = document.getElementById("seal-edit"); seal.value = e.seal||""; seal.oninput = () => { e.seal = seal.value; save(); };
+}
+document.getElementById("mark-woven").onclick = () => { const e = entry(current); if (!e.woven) e.woven = buildWoven(current); e.wovenDone = true; e.written = chars(current)>0 || !!e.woven; save(); toast("這滴已點亮"); renderWeave(); };
+document.getElementById("weave-back").onclick = () => show("play");
+function download(name, text, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = name; a.click(); URL.revokeObjectURL(a.href); }
+document.getElementById("export-day").onclick = () => download(`每日一問_第${String(current).padStart(2,"0")}天.txt`, entry(current).woven || buildWoven(current), "text/plain;charset=utf-8");
+document.getElementById("export-all").onclick = () => { download("每日一問_備份.json", JSON.stringify(state,null,2), "application/json"); toast("備份已下載"); };
+document.getElementById("import-btn").onclick = () => document.getElementById("import-file").click();
+document.getElementById("import-file").onchange = async (ev) => {
+  const file = ev.target.files[0]; if (!file) return;
+  try { const parsed = JSON.parse(await file.text()); if (!parsed.profile || !parsed.days) throw new Error("bad"); state = parsed; save(); toast("已匯入這本"); show("month"); }
+  catch (e) { toast("這份檔讀不起來"); }
+  ev.target.value = "";
+};
+function ask(title, body, onOk) {
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-body").textContent = body;
+  document.getElementById("modal").classList.add("on");
+  document.getElementById("modal-ok").onclick = () => { document.getElementById("modal").classList.remove("on"); onOk(); };
+  document.getElementById("modal-cancel").onclick = () => document.getElementById("modal").classList.remove("on");
+}
+document.getElementById("new-month").onclick = () => ask("開新的一個月？", "這一本會收進備份檔的結構裡，畫面上重新從第 01 天開始。建議先匯出。", () => {
+  state.archives = state.archives || [];
+  state.archives.push({ profile: state.profile, days: state.days, closed: fmt(new Date()) });
+  state.days = {};
+  state.profile.start = fmt(new Date());
+  save(); toast("新的一個月開始了"); show("play");
+});
+function renderStar() {
+  document.getElementById("star-meta").textContent = state.profile.name;
+  const cx=160, cy=132, R=96; let nodes="";
+  for (let i=0;i<30;i++) {
+    const a = -Math.PI/2 + i*(Math.PI*2/30);
+    const x = cx+Math.cos(a)*R, y = cy+Math.sin(a)*R*0.82;
+    const e = entry(i+1);
+    nodes += `<circle data-day="${i+1}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${written(i+1)?6.5:4}" fill="${e.wovenDone?"#1c4548":written(i+1)?"#8a7044":"rgba(28,69,72,.18)"}"/>`;
+  }
+  document.getElementById("star-map").innerHTML = `<svg viewBox="0 0 320 270" width="100%"><g fill="none" stroke="#8a7044" stroke-width="1.05"><polygon points="${pts(cx,cy,68,[0,120,240])}"/><polygon points="${pts(cx,cy,68,[60,180,300])}"/></g>${nodes}</svg>`;
+  document.querySelectorAll("[data-day]").forEach(n => n.onclick = () => { current=+n.dataset.day; step=0; show("play"); });
+  const seals = [...Array(30)].map((_,i)=>i+1).filter(n=>entry(n).seal).map(n=>`<p>第 ${String(n).padStart(2,"0")} 天 · ${entry(n).seal}</p>`).join("");
+  document.getElementById("seals").innerHTML = seals || `<p class="q">收成時留下的句子會掛在這裡。</p>`;
+}
+document.getElementById("open-main").onclick = () => { if (!state.profile) show("start"); else { current = todayIndex(); step=0; show("play"); } };
+document.getElementById("create-book").onclick = () => {
+  const name = document.getElementById("book-name").value.trim() || "我的第一個月";
+  const start = document.getElementById("book-start").value || fmt(new Date());
+  state.profile = { name, start };
+  save(); current = todayIndex(); step = 0; toast("這本已開好"); show("play");
+};
+document.querySelectorAll(".dock button").forEach(b => b.onclick = () => { if (b.dataset.view==="play") { current = state.profile ? todayIndex() : 1; step=0; } show(b.dataset.view); });
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+renderCover();
+</script>
+</body>
+</html>
